@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewPasswordStore(t *testing.T) {
-	data := `{"example.com":"foobar","wizbang.org":"i-am-a-teapot","gopher.net":"fizbaz"}`
+	passwords := `{"example.com":"foobar","wizbang.org":"i-am-a-teapot","gopher.net":"fizbaz"}`
 	reader := strings.NewReader(data)
 
 	expected := PasswordStore{

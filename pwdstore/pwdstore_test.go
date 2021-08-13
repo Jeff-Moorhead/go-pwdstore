@@ -1,6 +1,8 @@
 package pwdstore
 
 import (
+	"bytes"
+	"encoding/json"
 	"strings"
 	"testing"
 )
@@ -83,5 +85,35 @@ func TestSet(t *testing.T) {
 	got, _ := store.Get(website)
 	if got != password {
 		t.Errorf("Decrypting password failed, indicating encryption failed: got %v, expected %v", got, password)
+	}
+}
+
+func TestSave(t *testing.T) {
+	store := PasswordStore{
+		[]byte("fake-key"),
+		map[string]string{
+			"example.com": "f67430399130705f46f6d605aeb519b8973e50414e3ac7aa986ad1a2d710df8e026d",
+		},
+	}
+
+	var writer bytes.Buffer
+	err := store.Save(&writer)
+	if err != nil {
+		t.Fatalf("An unexpected error occurred in PasswordStore.Save: %q", err)
+	}
+
+	var contents []byte
+	_, err = writer.Read(contents)
+	if err != nil {
+		t.Fatalf("An unexpected error occurred reading back from contents: %q", err)
+	}
+
+	var unmarshaled map[string]string
+	_ = json.Unmarshal(contents, &unmarshaled)
+	for k, expected := range unmarshaled {
+		got := store.passwords[k]
+		if got != expected {
+			t.Errorf("Incorrect value read back from password destination: got %v, expected %v", got, expected)
+		}
 	}
 }

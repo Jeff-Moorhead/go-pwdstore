@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/jeff-moorhead/go-pwdmgr/pwdstore/encryption"
+	"github.com/jeff-moorhead/go-pwdmgr/encryption"
 )
 
 type PasswordStore struct {
@@ -80,6 +80,9 @@ func (self *PasswordStore) Set(key, value string) error {
 }
 
 func (self *PasswordStore) Save(writer io.Writer) error {
-	// TODO: Implement, writes passwords to writer
+	err := json.NewEncoder(writer).Encode(self.passwords)
+	if err != nil {
+		return err
+	}
 	return nil
 }

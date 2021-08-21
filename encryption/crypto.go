@@ -30,6 +30,15 @@ func DecodeString(data string) ([]byte, error) {
 	return hex.DecodeString(data)
 }
 
+func NewEncodedKey() ([]byte, error) {
+	key, err := NewEncryptionKey()
+	if err != nil {
+		return nil, err
+	}
+
+	return EncodeToHex(key), nil
+}
+
 // NewEncryptionKey generates a random 256-bit key for Encrypt() and Decrypt().
 func NewEncryptionKey() ([]byte, error) {
 	key := make([]byte, EncryptionKeySize)

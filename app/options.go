@@ -11,7 +11,7 @@ type Options struct {
 	Init     bool
 	File     string
 	Key      string
-	Name     string
+	Title    string
 	Password string
 	Add      bool
 }
@@ -38,7 +38,7 @@ func GetOptions() Options {
 	init := flag.Bool("init", false, "Initialize a new manager and create a new encryption key")
 	file := flag.String("file", "", "Path to the password file, default is ~/.pwdmgr/store.json")
 	key := flag.String("key", "", "Path to the password key file, default is ~/.pwdmgr/store.key")
-	name := flag.String("name", "", "Name of the website, e.g. www.facebook.com")
+	title := flag.String("title", "", "Title for this password, e.g. www.facebook.com")
 	password := flag.String("password", "", "Password, only used when adding or modifying")
 	add := flag.Bool("add", false, "Set when adding a new password")
 	flag.Parse()
@@ -47,7 +47,7 @@ func GetOptions() Options {
 		Init:     *init,
 		File:     *file,
 		Key:      *key,
-		Name:     *name,
+		Title:    *title,
 		Password: *password,
 		Add:      *add,
 	}

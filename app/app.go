@@ -23,16 +23,35 @@ func NewApp() (*App, error) {
 }
 
 func (self *App) Run() error {
-	var err error
-	if self.opts.Init {
-		fmt.Println("Initializing new password manager...")
-		err = self.initializeBackend()
-		if err != nil {
-			return fmt.Errorf("Something went wrong initializing manager, %v", err)
+	switch {
+	case self.opts.Init:
+		{
+			fmt.Println("Initializing new password manager...")
+			err := self.initializeBackend()
+			if err != nil {
+				return fmt.Errorf("Something went wrong initializing manager, %v", err)
+			}
+
+			fmt.Println("Initialization complete! Run `go-pwdmgr --add --password <password> --title <title>` to add a new password.")
+			return nil
 		}
 
-		fmt.Println("Initialization complete! Run `go-pwdmgr --add --password <password> --title <title>` to add a new password.")
-		return nil
+	case self.opts.Add:
+		ok := self.checkAddArgs()
+		if !ok {
+			return fmt.Errorf("Missing arguments: to add a password, include --title and --password arguments.")
+		}
+
+		err := self.addPassword()
+		if err != nil {
+			return fmt.Errorf("Something went wrong adding password, %v", err)
+		}
+
+	default:
+		err := self.getPassword()
+		if err != nil {
+			return fmt.Errorf("Something went wrong getting password, %v", err)
+		}
 	}
 
 	return nil
@@ -64,7 +83,7 @@ func (self *App) initializeBackend() error {
 		return err
 	}
 
-	err = os.WriteFile(mgrfile, nil, 0600)
+	err = os.WriteFile(mgrfile, []byte("{}"), 0600)
 	if err != nil {
 		return err
 	}
@@ -101,4 +120,77 @@ func (self *App) getFilename() (string, error) {
 		return DefaultFile("store.json")
 	}
 	return self.opts.File, nil
+}
+
+func (self *App) checkAddArgs() bool {
+	// To add add password, password and title are required
+	return self.opts.Password != "" && self.opts.Title != ""
+}
+
+func (self *App) loadManager() error {
+	keyname, err := self.getKeyFilename()
+	if err != nil {
+		return err
+	}
+
+	key, err := os.ReadFile(keyname)
+	if err != nil {
+		return err
+	}
+
+	filename, err := self.getFilename()
+	if err != nil {
+		return err
+	}
+
+	pwds, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+
+	mgr, err := pwdstore.NewPasswordStore(pwds, key)
+	if err != nil {
+		return err
+	}
+
+	self.manager = mgr
+	return nil
+}
+
+func (self *App) addPassword() error {
+	err := self.loadManager()
+	if err != nil {
+		return err
+	}
+
+	existing, _ := self.manager.Get(self.opts.Title)
+	if existing != "" {
+		return fmt.Errorf("Password with title %v already exists. Use --set to change or --remove to remove.", self.opts.Title)
+	}
+
+	err = self.manager.Set(self.opts.Title, self.opts.Password)
+	if err != nil {
+		return nil
+	}
+
+	filename, err := self.getFilename()
+	if err != nil {
+		return err
+	}
+
+	// Open back end file for writing
+	f, err := os.OpenFile(filename, os.O_RDWR, os.ModeAppend)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	self.manager.Save(f)
+	fmt.Println("Password saved!")
+
+	return nil
+}
+
+func (self *App) getPassword() error {
+	return nil
 }

@@ -3,16 +3,11 @@ package pwdstore
 import (
 	"bytes"
 	"encoding/json"
-	"strings"
 	"testing"
 )
 
 func TestNewPasswordStore(t *testing.T) {
-	passwords := `{"example.com":"foobar","wizbang.org":"i-am-a-teapot","gopher.net":"fizbaz"}`
-
-	// Because NewPasswordStore takes an interface, we are able to easily mock the input using any
-	// type that implements io.Reader
-	reader := strings.NewReader(passwords)
+	passwords := []byte(`{"example.com":"foobar","wizbang.org":"i-am-a-teapot","gopher.net":"fizbaz"}`)
 
 	expected := PasswordStore{
 		[]byte("foobar"),
@@ -23,7 +18,7 @@ func TestNewPasswordStore(t *testing.T) {
 		},
 	}
 
-	got, err := NewPasswordStore(reader, []byte("foobar"))
+	got, err := NewPasswordStore(passwords, []byte("foobar"))
 	if err != nil {
 		t.Fatalf("An error occurred building the password store: %q", err)
 	}

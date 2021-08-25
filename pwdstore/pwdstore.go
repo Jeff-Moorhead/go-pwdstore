@@ -13,9 +13,9 @@ type PasswordStore struct {
 	passwords map[string]string
 }
 
-func NewPasswordStore(reader io.Reader, key []byte) (*PasswordStore, error) {
+func NewPasswordStore(passwords, key []byte) (*PasswordStore, error) {
 	var pwds map[string]string
-	err := json.NewDecoder(reader).Decode(&pwds)
+	err := json.Unmarshal(passwords, &pwds)
 	if err != nil {
 		return nil, err
 	}
@@ -80,9 +80,15 @@ func (self *PasswordStore) Set(key, value string) error {
 }
 
 func (self *PasswordStore) Save(writer io.Writer) error {
-	err := json.NewEncoder(writer).Encode(self.passwords)
+	b, err := json.Marshal(self.passwords)
 	if err != nil {
 		return err
 	}
+
+	_, err = writer.Write(b)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

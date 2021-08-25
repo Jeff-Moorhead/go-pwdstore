@@ -23,8 +23,7 @@ func NewApp() (*App, error) {
 }
 
 func (self *App) Run() error {
-	switch {
-	case self.opts.Init:
+	if self.opts.Init {
 		fmt.Println("Initializing new password manager...")
 		err := self.initializeBackend()
 		if err != nil {
@@ -32,7 +31,15 @@ func (self *App) Run() error {
 		}
 
 		fmt.Println("Initialization complete! Run `go-pwdmgr --add --password <password> --title <title>` to add a new password.")
+		return nil
+	}
 
+	err := self.loadManager()
+	if err != nil {
+		return err
+	}
+
+	switch {
 	case self.opts.Add:
 		ok := self.checkAddArgs()
 		if !ok {
@@ -167,17 +174,12 @@ func (self *App) loadManager() error {
 }
 
 func (self *App) addPassword() error {
-	err := self.loadManager()
-	if err != nil {
-		return err
-	}
-
 	existing, _ := self.manager.Get(self.opts.Title)
 	if existing != "" {
 		return fmt.Errorf("Password with title %v already exists. Use --set to change or --remove to remove.", self.opts.Title)
 	}
 
-	err = self.manager.Set(self.opts.Title, self.opts.Password)
+	err := self.manager.Set(self.opts.Title, self.opts.Password)
 	if err != nil {
 		return nil
 	}
@@ -204,10 +206,5 @@ func (self *App) checkGetArgs() bool {
 }
 
 func (self *App) getPassword() (string, error) {
-	err := self.loadManager()
-	if err != nil {
-		return "", err
-	}
-
 	return self.manager.Get(self.opts.Title)
 }

@@ -25,16 +25,13 @@ func NewApp() (*App, error) {
 func (self *App) Run() error {
 	switch {
 	case self.opts.Init:
-		{
-			fmt.Println("Initializing new password manager...")
-			err := self.initializeBackend()
-			if err != nil {
-				return fmt.Errorf("Something went wrong initializing manager, %v", err)
-			}
-
-			fmt.Println("Initialization complete! Run `go-pwdmgr --add --password <password> --title <title>` to add a new password.")
-			return nil
+		fmt.Println("Initializing new password manager...")
+		err := self.initializeBackend()
+		if err != nil {
+			return fmt.Errorf("Something went wrong initializing manager, %v", err)
 		}
+
+		fmt.Println("Initialization complete! Run `go-pwdmgr --add --password <password> --title <title>` to add a new password.")
 
 	case self.opts.Add:
 		ok := self.checkAddArgs()

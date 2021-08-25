@@ -1,5 +1,7 @@
 package app
 
+// TODO: Design and implement master password functionality
+
 import (
 	"fmt"
 	"os"
@@ -50,6 +52,8 @@ func (self *App) Run() error {
 		}
 
 		fmt.Println("Initialization complete! Run `go-pwdmgr --add --password <password> --title <title>` to add a new password.")
+
+		// Stop execution after initialization
 		return nil
 	}
 
@@ -70,12 +74,15 @@ func (self *App) Run() error {
 		}
 
 		fmt.Println() // Padding on bottom
+
+		// Stop execution after printing titles
 		return nil
 	}
 
 	switch {
+
+	// Order of priority for app flags: Add, Set, Remove. Only one will run.
 	case self.opts.Add:
-		// TODO: extract argument checking into one function
 		ok := self.checkAddArgs()
 		if !ok {
 			return fmt.Errorf("Missing arguments: to add a password, include --title and --password arguments.")

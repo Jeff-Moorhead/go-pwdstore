@@ -12,6 +12,7 @@ var (
 func setUp() {
 	encryptionKey, _ = NewEncryptionKey()
 }
+
 func TestNewEncryptionKey(t *testing.T) {
 	k, err := NewEncryptionKey()
 	if err != nil {

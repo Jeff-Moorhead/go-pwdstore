@@ -47,11 +47,23 @@ func (self *App) Run() error {
 			return fmt.Errorf("Something went wrong adding password, %v", err)
 		}
 
+		fmt.Println("Password saved!")
+
+	// TODO: Implement set, remove, and show-titles functionality
+
 	default:
-		err := self.getPassword()
+		// Default is to fetch the password
+		ok := self.checkGetArgs()
+		if !ok {
+			return fmt.Errorf("Missing argument: to get a password, include --title argument")
+		}
+
+		pwd, err := self.getPassword()
 		if err != nil {
 			return fmt.Errorf("Something went wrong getting password, %v", err)
 		}
+
+		fmt.Printf("Password for %v: %v\n", self.opts.Title, pwd)
 	}
 
 	return nil
@@ -183,14 +195,22 @@ func (self *App) addPassword() error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
+	defer f.Close()
 	self.manager.Save(f)
-	fmt.Println("Password saved!")
 
 	return nil
 }
 
-func (self *App) getPassword() error {
-	return nil
+func (self *App) checkGetArgs() bool {
+	return self.opts.Title != ""
+}
+
+func (self *App) getPassword() (string, error) {
+	err := self.loadManager()
+	if err != nil {
+		return "", err
+	}
+
+	return self.manager.Get(self.opts.Title)
 }

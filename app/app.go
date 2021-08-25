@@ -30,7 +30,7 @@ func DefaultFile(base string) (string, error) {
 }
 
 type App struct {
-	manager *pwdstore.PasswordStore
+	manager pwdstore.Store // Program to the interface
 	opts    Options
 }
 

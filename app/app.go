@@ -3,10 +3,29 @@ package app
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/jeff-moorhead/go-pwdmgr/encryption"
 	"github.com/jeff-moorhead/go-pwdmgr/pwdstore"
 )
+
+func BaseDir() (string, error) {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("Could not get default directory: %v", err)
+	}
+
+	return filepath.Join(homedir, ".pwdmgr"), nil
+}
+
+func DefaultFile(base string) (string, error) {
+	dir, err := BaseDir()
+	if err != nil {
+		return "", fmt.Errorf("Could not get default file: %v", err)
+	}
+
+	return filepath.Join(dir, base), nil
+}
 
 type App struct {
 	manager *pwdstore.PasswordStore
@@ -39,8 +58,24 @@ func (self *App) Run() error {
 		return err
 	}
 
+	if self.opts.All {
+		titles := self.getTitles()
+
+		fmt.Println() // Padding on top
+		fmt.Println("Titles")
+		fmt.Println("--------------------------------------------------------------------")
+
+		for _, t := range titles {
+			fmt.Printf(" - %v\n", t)
+		}
+
+		fmt.Println() // Padding on bottom
+		return nil
+	}
+
 	switch {
 	case self.opts.Add:
+		// TODO: extract argument checking into one function
 		ok := self.checkAddArgs()
 		if !ok {
 			return fmt.Errorf("Missing arguments: to add a password, include --title and --password arguments.")
@@ -53,7 +88,31 @@ func (self *App) Run() error {
 
 		fmt.Println("Password saved!")
 
-	// TODO: Implement set, remove, and show-titles functionality
+	case self.opts.Set:
+		ok := self.checkSetArgs()
+		if !ok {
+			return fmt.Errorf("Missing arguments: to set a password, include --title and --password arguments.")
+		}
+
+		err := self.setPassword()
+		if err != nil {
+			return fmt.Errorf("Something went wrong setting password, %v", err)
+		}
+
+		fmt.Println("Password saved!")
+
+	case self.opts.Remove:
+		ok := self.checkRemoveArgs()
+		if !ok {
+			return fmt.Errorf("Missing arguments: to remove a password, include --title argument.")
+		}
+
+		err := self.removePassword()
+		if err != nil {
+			return fmt.Errorf("Something went wrong removing password, %v", err)
+		}
+
+		fmt.Println("Password removed!")
 
 	default:
 		// Default is to fetch the password
@@ -124,6 +183,10 @@ func (self *App) initBaseDir() error {
 	return nil
 }
 
+func (self *App) getTitles() []string {
+	return self.manager.Keys()
+}
+
 func (self *App) getKeyFilename() (string, error) {
 	if self.opts.Key == "" {
 		return DefaultFile("store.key")
@@ -136,11 +199,6 @@ func (self *App) getFilename() (string, error) {
 		return DefaultFile("store.json")
 	}
 	return self.opts.File, nil
-}
-
-func (self *App) checkAddArgs() bool {
-	// To add add password, password and title are required
-	return self.opts.Password != "" && self.opts.Title != ""
 }
 
 func (self *App) loadManager() error {
@@ -173,6 +231,11 @@ func (self *App) loadManager() error {
 	return nil
 }
 
+func (self *App) checkAddArgs() bool {
+	// To add add password, password and title are required
+	return self.opts.Password != "" && self.opts.Title != ""
+}
+
 func (self *App) addPassword() error {
 	existing, _ := self.manager.Get(self.opts.Title)
 	if existing != "" {
@@ -184,19 +247,10 @@ func (self *App) addPassword() error {
 		return nil
 	}
 
-	filename, err := self.getFilename()
+	err = self.save()
 	if err != nil {
 		return err
 	}
-
-	// Open back end file for writing
-	f, err := os.OpenFile(filename, os.O_RDWR, os.ModeAppend)
-	if err != nil {
-		return err
-	}
-
-	defer f.Close()
-	self.manager.Save(f)
 
 	return nil
 }
@@ -207,4 +261,63 @@ func (self *App) checkGetArgs() bool {
 
 func (self *App) getPassword() (string, error) {
 	return self.manager.Get(self.opts.Title)
+}
+
+func (self *App) checkSetArgs() bool {
+	return self.opts.Title != "" && self.opts.Password != ""
+}
+
+func (self *App) setPassword() error {
+	_, err := self.manager.Get(self.opts.Title)
+	if err != nil {
+		return err
+	}
+
+	err = self.manager.Set(self.opts.Title, self.opts.Password)
+	if err != nil {
+		return err
+	}
+
+	err = self.save()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (self *App) checkRemoveArgs() bool {
+	return self.opts.Title != ""
+}
+
+func (self *App) removePassword() error {
+	self.manager.Remove(self.opts.Title)
+
+	err := self.save()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (self *App) save() error {
+	filename, err := self.getFilename()
+	if err != nil {
+		return err
+	}
+
+	// Open backend file for writing
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+	err = self.manager.Save(f)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

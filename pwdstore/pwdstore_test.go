@@ -83,6 +83,22 @@ func TestSet(t *testing.T) {
 	}
 }
 
+func TestRemove(t *testing.T) {
+	title := "example.com"
+	store := PasswordStore{
+		[]byte("fake-key"),
+		map[string]string{
+			title: "f67430399130705f46f6d605aeb519b8973e50414e3ac7aa986ad1a2d710df8e026d",
+		},
+	}
+
+	store.Remove(title)
+
+	if _, ok := store.passwords[title]; ok {
+		t.Errorf("Password is still in password store after calling Remove()")
+	}
+}
+
 func TestSave(t *testing.T) {
 	store := PasswordStore{
 		[]byte("fake-key"),
@@ -109,6 +125,26 @@ func TestSave(t *testing.T) {
 		got := store.passwords[k]
 		if got != expected {
 			t.Errorf("Incorrect value read back from password destination: got %v, expected %v", got, expected)
+		}
+	}
+}
+
+func TestKeys(t *testing.T) {
+	store := PasswordStore{
+		[]byte("fake-key"),
+		map[string]string{
+			"example.com":  "abc",
+			"example2.com": "xyz",
+			"example3.com": "123",
+		},
+	}
+
+	expected := []string{"example.com", "example2.com", "example3.com"}
+	got := store.Keys()
+
+	for i, v := range got {
+		if expected[i] != v {
+			t.Errorf("Incorrect value: got %v, expected %v", v, expected[i])
 		}
 	}
 }

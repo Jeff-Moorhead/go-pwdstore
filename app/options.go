@@ -2,9 +2,6 @@ package app
 
 import (
 	"flag"
-	"fmt"
-	"os"
-	"path/filepath"
 )
 
 type Options struct {
@@ -14,24 +11,9 @@ type Options struct {
 	Title    string
 	Password string
 	Add      bool
-}
-
-func BaseDir() (string, error) {
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("Could not get default directory: %v", err)
-	}
-
-	return filepath.Join(homedir, ".pwdmgr"), nil
-}
-
-func DefaultFile(base string) (string, error) {
-	dir, err := BaseDir()
-	if err != nil {
-		return "", fmt.Errorf("Could not get default file: %v", err)
-	}
-
-	return filepath.Join(dir, base), nil
+	Set      bool
+	Remove   bool
+	All      bool
 }
 
 func GetOptions() Options {
@@ -40,7 +22,10 @@ func GetOptions() Options {
 	key := flag.String("key", "", "Path to the password key file, default is ~/.pwdmgr/store.key")
 	title := flag.String("title", "", "Title for this password, e.g. www.facebook.com")
 	password := flag.String("password", "", "Password, only used when adding or modifying")
-	add := flag.Bool("add", false, "Set when adding a new password")
+	add := flag.Bool("add", false, "Enables adding a new password")
+	set := flag.Bool("set", false, "Enables modifying an existing password")
+	remove := flag.Bool("remove", false, "Enables removing a password")
+	all := flag.Bool("all", false, "View all titles")
 	flag.Parse()
 
 	return Options{
@@ -50,5 +35,8 @@ func GetOptions() Options {
 		Title:    *title,
 		Password: *password,
 		Add:      *add,
+		Set:      *set,
+		Remove:   *remove,
+		All:      *all,
 	}
 }

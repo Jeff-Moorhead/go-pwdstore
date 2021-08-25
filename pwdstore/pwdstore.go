@@ -79,6 +79,10 @@ func (self *PasswordStore) Set(key, value string) error {
 	return nil
 }
 
+func (self *PasswordStore) Remove(key string) {
+	delete(self.passwords, key)
+}
+
 func (self *PasswordStore) Save(writer io.Writer) error {
 	b, err := json.Marshal(self.passwords)
 	if err != nil {
@@ -91,4 +95,15 @@ func (self *PasswordStore) Save(writer io.Writer) error {
 	}
 
 	return nil
+}
+
+func (self *PasswordStore) Keys() []string {
+	keys := make([]string, len(self.passwords))
+	i := 0
+	for k := range self.passwords {
+		keys[i] = k
+		i++
+	}
+
+	return keys
 }

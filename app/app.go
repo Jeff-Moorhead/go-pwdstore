@@ -3,6 +3,8 @@ package app
 // TODO: Design and implement master password functionality
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,6 +12,8 @@ import (
 	"github.com/jeff-moorhead/go-pwdmgr/encryption"
 	"github.com/jeff-moorhead/go-pwdmgr/pwdstore"
 )
+
+var ErrAccessDenied = errors.New("Access denied.")
 
 func BaseDir() (string, error) {
 	homedir, err := os.UserHomeDir()
@@ -44,6 +48,39 @@ func NewApp() (*App, error) {
 }
 
 func (self *App) Run() error {
+	/*
+		Master passwords:
+
+		- If no master password is found, allow init automatically (you can change your passwords, but at least
+			an attacker won't have access to them this way)
+		- If no master password is found, and init is not passed, exit immediately.
+		- If master password IS found, it must be checked immediately. If the value given by the user is incorrect,
+			exit immediately.
+	*/
+
+	run := false
+
+	masterhash, err := self.loadMasterPasswordHash()
+	if err != nil {
+		if !self.opts.Init {
+			// If any error occurred reading the master password file, report that error, and stop execution immediately.
+			return fmt.Errorf("%v. %v", err, ErrAccessDenied)
+		} else {
+			run = true // If error occurred reading password file and init is found, allow user to wipe passwords. At least an attacker won't have access.
+			// TODO: refactor into a function
+		}
+	}
+
+	input := self.getMasterPassword()
+	correctPassword := encryption.CheckPassword(input, masterhash)
+	if correctPassword {
+		run = true // Only run if master password is correct
+	}
+
+	if !run {
+		return ErrAccessDenied
+	}
+
 	if self.opts.Init {
 		fmt.Println("Initializing new password manager...")
 		err := self.initializeBackend()
@@ -57,7 +94,7 @@ func (self *App) Run() error {
 		return nil
 	}
 
-	err := self.loadManager()
+	err = self.loadManager()
 	if err != nil {
 		return err
 	}
@@ -139,6 +176,13 @@ func (self *App) Run() error {
 	return nil
 }
 
+func (self *App) getMasterPassword() []byte {
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+
+	return scanner.Bytes()
+}
+
 func (self *App) initializeBackend() error {
 	err := self.initBaseDir()
 	if err != nil {
@@ -175,7 +219,7 @@ func (self *App) initializeBackend() error {
 
 func (self *App) initBaseDir() error {
 	// Only create the base directory if the user does not specify a data file or key file
-	if self.opts.File == "" || self.opts.Key == "" {
+	if self.opts.File == "" || self.opts.Key == "" || self.opts.Master == "" {
 		mgrRoot, err := BaseDir()
 		if err != nil {
 			return err
@@ -196,9 +240,16 @@ func (self *App) getTitles() []string {
 
 func (self *App) getKeyFilename() (string, error) {
 	if self.opts.Key == "" {
-		return DefaultFile("store.key")
+		return DefaultFile(".store.key")
 	}
 	return self.opts.Key, nil
+}
+
+func (self *App) getMasterPwdFilename() (string, error) {
+	if self.opts.Master == "" {
+		return DefaultFile(".master")
+	}
+	return self.opts.Master, nil
 }
 
 func (self *App) getFilename() (string, error) {
@@ -206,6 +257,20 @@ func (self *App) getFilename() (string, error) {
 		return DefaultFile("store.json")
 	}
 	return self.opts.File, nil
+}
+
+func (self *App) loadMasterPasswordHash() ([]byte, error) {
+	name, err := self.getMasterPwdFilename()
+	if err != nil {
+		return nil, err
+	}
+
+	hash, err := os.ReadFile(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return hash, nil
 }
 
 func (self *App) loadManager() error {

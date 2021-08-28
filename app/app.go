@@ -9,8 +9,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jeff-moorhead/go-pwdmgr/encryption"
-	"github.com/jeff-moorhead/go-pwdmgr/pwdstore"
+	"github.com/jeff-moorhead/go-pwdstore/encryption"
+	"github.com/jeff-moorhead/go-pwdstore/pwdstore"
 )
 
 var ErrAccessDenied = errors.New("Access denied.")

@@ -11,13 +11,10 @@ The Elephant in the Room
 
 This app was built as a side project to explore cryptography and how to use symmetric encryption in Go. *IT HAS
 NOT BEEN TESTED AGAINST VULNERABILITIES AND SHOULD NOT BE USED TO STORE SENSITIVE INFORMATION*. One obvious
-vulnerability is that it keeps the encryption key alongside the encrypted data. The user could make it slightly
-harder for an attacker to gain access to their data by hiding the key in a different location on disk, but
-that would likely not provide much protection. The manager writes data and key files with 600 permissions so
-only that user can access the files, but if anybody gains access to your user account, your information will
-be vulnerable.
-
-There are much better password managers available. Use those instead for any real data you need to keep secret.
+vulnerability is that it keeps the encryption key alongside the encrypted data. The manager writes data and key
+files with 600 permissions so only your user can access the files, but if anybody gains access to your computer
+and account information, your information will be vulnerable. Overall, there are much better commercial password
+managers available. Use those instead for any real data you need to keep secret.
 
 Usage
 -----

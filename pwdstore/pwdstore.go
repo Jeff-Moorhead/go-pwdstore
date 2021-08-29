@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/jeff-moorhead/go-pwdmgr/encryption"
+	"github.com/jeff-moorhead/go-pwdstore/encryption"
 )
 
 type PasswordStore struct {

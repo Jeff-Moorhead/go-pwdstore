@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/jeff-moorhead/go-pwdmgr/app"
+	"github.com/jeff-moorhead/go-pwdstore/app"
 )
 
 func main() {

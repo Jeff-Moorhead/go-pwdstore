@@ -1,4 +1,4 @@
-go-pwdmgr
+go-pwdstore
 =========
 
 This is a simple commandline password manager implemented in Go. It stores passwords as AES-256 encrypted
@@ -31,7 +31,7 @@ ready.
 Usage
 -----
 
-To initialize a new password manager, run `go-pwdmgr --init`. From here, you can add, remove, change, and view
+To initialize a new password manager, run `go-pwdstore --init`. From here, you can add, remove, change, and view
 passwords. To add a new password, use the `--title` and `--password` options. If `--add`, `--remove`, and `--set`
 are omitted, the default behavior is to display the decrypted password for the given title.
 

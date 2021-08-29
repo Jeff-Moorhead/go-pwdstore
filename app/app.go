@@ -51,7 +51,7 @@ func (self *App) Run() error {
 			return fmt.Errorf("Something went wrong initializing manager, %v", err)
 		}
 
-		fmt.Println("Initialization complete! Run `go-pwdmgr --add --password <password> --title <title>` to add a new password.")
+		fmt.Println("Initialization complete! Run `go-pwdstore --add --password <password> --title <title>` to add a new password.")
 
 		// Stop execution after initialization
 		return nil

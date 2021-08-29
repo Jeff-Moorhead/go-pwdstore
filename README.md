@@ -19,15 +19,6 @@ be vulnerable.
 
 There are much better password managers available. Use those instead for any real data you need to keep secret.
 
-Upcoming
---------
-
-I am planning on adding a master password check to further protect data so that even if an attacker does gain
-access to your user account, they will need to enter a master password to view your passwords through the commandline
-program. However, if the attacker has access to your files, it would still be a simple exercise to use the key
-to decrypt the data, so this addition is more out of my own interest than an attempt to make this tool production-
-ready.
-
 Usage
 -----
 

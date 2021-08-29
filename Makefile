@@ -1,15 +1,24 @@
+USERBIN := ~/bin
+PACKAGEBIN := ./bin
+EXECUTABLE := go-pwdstore
+MAIN := cmd/main.go
+
 all: build
 
-bin:
+$(PACKAGEBIN):
 	@echo "Creating output directory at ./bin/"
-	@mkdir -p bin
-	
-	
-build: bin
-	@echo "Build go-pwdstore"
-	@go build -o bin/go-pwdstore cmd/main.go	
+	@mkdir -p $(PACKAGEBIN)
 
-install-user:
-	@mkdir -p ~/bin
-	@go build -o ~/bin/go-pwdstore cmd/main.go	
+$(USERBIN):
+	@echo "Creating output directory at ~/bin/"
+	@mkdir -p $(USERBIN)
+	
+	
+build: $(PACKAGEBIN)
+	@echo "Building go-pwdstore"
+	@go build -o $(PACKAGEBIN)/$(EXECUTABLE) $(MAIN)
+
+install-user: $(USERBIN)
+	@echo "Building go-pwdstore"
+	@go build -o $(USERBIN)/$(EXECUTABLE) $(MAIN)
 	

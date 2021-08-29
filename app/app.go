@@ -1,7 +1,5 @@
 package app
 
-// TODO: Design and implement master password functionality
-
 import (
 	"fmt"
 	"os"

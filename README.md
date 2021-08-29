@@ -16,6 +16,21 @@ files with 600 permissions so only your user can access the files, but if anybod
 and account information, your information will be vulnerable. Overall, there are much better commercial password
 managers available. Use those instead for any real data you need to keep secret.
 
+Installation
+------------
+
+To install, download the source code via Git:
+
+`$ git clone https://github.com/Jeff-Moorhead/go-pwdstore.git`
+
+Once you have the code downloaded locally, from the top of the repo, run:
+
+`$ make install-user`
+
+This will build the binary and install it in `~/bin`, creating
+that directory if it doesn't exist. You may need to add `~/bin`
+to your path with `export PATH=$PATH:~/bin`.
+
 Usage
 -----
 
